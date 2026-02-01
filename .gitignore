@@ -1,6 +1,5 @@
 __pycache__/
 *.pyc
-__init__.py
 build.py
 build/
 venv/
