@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, QSlider, QComboBox
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtCore import Qt, QSize, QUrl
+from PySide6.QtGui import QIcon, QAction, QDesktopServices
 from app.core.config_manager import ConfigManager
 from app.core.state import AppState
 from app.core.sound_engine import get_engine, SoundEngine
@@ -9,6 +9,29 @@ import sys
 
 # Esta es la ventana principal que ve el usuario.
 # Debe ser moderna y bonita.
+
+# Clase auxiliar para el enlace del pie de página
+class WebLinkLabel(QLabel):
+    def __init__(self, text, url, parent=None):
+        super().__init__(text, parent)
+        self.url = url
+        self.setCursor(Qt.PointingHandCursor)
+        self.setAlignment(Qt.AlignCenter)
+        
+    def mousePressEvent(self, event):
+        QDesktopServices.openUrl(QUrl(self.url))
+        
+    def enterEvent(self, event):
+        font = self.font()
+        font.setBold(True)
+        self.setFont(font)
+        super().enterEvent(event)
+        
+    def leaveEvent(self, event):
+        font = self.font()
+        font.setBold(False)
+        self.setFont(font)
+        super().leaveEvent(event)
 
 class TypheraWindow(QMainWindow):
     def __init__(self):
@@ -32,8 +55,8 @@ class TypheraWindow(QMainWindow):
         top_bar_layout = QHBoxLayout()
         top_bar_layout.addStretch() # Empujar a la derecha
 
-        self.theme_btn = QPushButton("☀") # Icono o texto corto
-        self.theme_btn.setFixedSize(30, 30)
+        self.theme_btn = QPushButton("☀️") # Icono o texto corto
+        self.theme_btn.setFixedSize(40, 40)
         self.theme_btn.setCursor(Qt.PointingHandCursor)
         self.theme_btn.clicked.connect(self.toggle_theme)
         # Tooltip
@@ -96,6 +119,12 @@ class TypheraWindow(QMainWindow):
         vol_layout.addWidget(self.vol_slider)
         content_layout.addLayout(vol_layout)
 
+        content_layout.addStretch()
+        
+        # Enlace del pie de página
+        self.footer_link = WebLinkLabel("Web: knnabiz.vip", "https://knnabiz.vip")
+        content_layout.addWidget(self.footer_link)
+
 
         # Aplicamos el tema guardado
         self.apply_theme()
@@ -119,57 +148,179 @@ class TypheraWindow(QMainWindow):
                 QPushButton {{
                     background-color: transparent;
                     color: {text_color};
-                    border-radius: 15px; /* Redondo */
-                    font-size: 18px;
+                    border: 1px solid {btn_hover};
+                    border-radius: 20px; /* Redondo */
+                    font-size: 14px;
                 }}
                 QPushButton:hover {{
                     background-color: {btn_hover};
+                    border-color: {text_color};
                 }}
             """
         else:
-            # Colores claros
-            bg_color = "#eff1f5" # Base
-            text_color = "#4c4f69" # Text
-            btn_bg = "#e6e9ef" # Surface0
-            btn_text = "#4c4f69"
-            btn_hover = "#bcc0cc" # Surface1
+            # Modo Claro - Paleta Mejorada
+            bg_color = "#FAFAFA" # Blanco Roto / Gris Muy Claro
+            text_color = "#2C3E50" # Azul Oscuro / Gris Antracita
+            btn_bg = "#FFFFFF" # Superficie Blanca
+            btn_text = "#2C3E50"
+            btn_hover = "#F0F0F0" # Gris Tenue
             
             theme_btn_style = f"""
                 QPushButton {{
                     background-color: transparent;
                     color: {text_color};
-                    border-radius: 15px;
-                    font-size: 18px;
+                    border: 1px solid #E0E0E0;
+                    border-radius: 20px;
+                    font-size: 14px;
+                }}
+                QPushButton:hover {{
+                    background-color: #F0F0F0;
+                    border-color: {text_color};
+                }}
+            """
+
+        self.theme_btn.setText("🌙" if current_theme == "light" else "☀️")
+        self.theme_btn.setStyleSheet(theme_btn_style)
+
+        # Actualizar color del enlace del pie de página
+        self.footer_link.setStyleSheet(f"color: {text_color}; margin-top: 10px; font-size: 12px;")
+
+        # Aplicamos la hoja de estilo general con reglas mejoradas
+        if current_theme == "dark":
+            # Estilo Dark Mode (Mejorado)
+            self.setStyleSheet(f"""
+                QMainWindow {{
+                    background-color: {bg_color};
+                }}
+                QLabel {{
+                    color: {text_color};
+                }}
+                QPushButton {{
+                    background-color: {btn_bg};
+                    color: {btn_text};
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px;
+                    font-size: 14px;
+                    font-weight: bold;
                 }}
                 QPushButton:hover {{
                     background-color: {btn_hover};
                 }}
-            """
-
-        self.theme_btn.setText("🌙" if current_theme == "light" else "☀")
-        self.theme_btn.setStyleSheet(theme_btn_style)
-
-        # Aplicamos la hoja de estilo general
-        self.setStyleSheet(f"""
-            QMainWindow {{
-                background-color: {bg_color};
-            }}
-            QLabel {{
-                color: {text_color};
-            }}
-            QPushButton {{
-                background-color: {btn_bg};
-                color: {btn_text};
-                border: none;
-                border-radius: 8px;
-                padding: 10px;
-                font-size: 14px;
-                font-weight: bold;
-            }}
-            QPushButton#toggle_btn:hover {{
-                background-color: {btn_hover};
-            }}
-        """)
+                QPushButton:pressed {{
+                    background-color: #585b70;
+                }}
+                QComboBox {{
+                    padding: 5px;
+                    border: 1px solid {btn_hover};
+                    border-radius: 5px;
+                    background-color: {btn_bg};
+                    color: {text_color};
+                }}
+                QComboBox::drop-down {{
+                    border: none;
+                }}
+                QComboBox QAbstractItemView {{
+                    border: 1px solid {btn_hover};
+                    selection-background-color: {btn_hover};
+                    selection-color: {text_color};
+                    background-color: {btn_bg};
+                    color: {text_color};
+                    outline: none;
+                }}
+                QSlider::groove:horizontal {{
+                    border: 1px solid {btn_hover};
+                    height: 6px;
+                    background: {btn_bg};
+                    margin: 2px 0;
+                    border-radius: 3px;
+                }}
+                QSlider::sub-page:horizontal {{
+                    background: #585b70;
+                    border: 1px solid #585b70;
+                    height: 6px;
+                    border-radius: 3px;
+                }}
+                QSlider::handle:horizontal {{
+                    background: {text_color};
+                    border: 1px solid {text_color};
+                    width: 16px;
+                    height: 16px;
+                    margin: -6px 0;
+                    border-radius: 8px;
+                }}
+            """)
+        else:
+            # Estilo Light Mode (Nuevo y Mejorado)
+            self.setStyleSheet(f"""
+                QMainWindow {{
+                    background-color: {bg_color};
+                }}
+                QLabel {{
+                    color: {text_color};
+                }}
+                QPushButton {{
+                    background-color: {btn_bg};
+                    color: {btn_text};
+                    border: 1px solid #E0E0E0; /* Borde sutil */
+                    border-radius: 8px;
+                    padding: 10px;
+                    font-size: 14px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{
+                    background-color: {btn_hover};
+                    border: 1px solid #D0D0D0;
+                }}
+                QPushButton:pressed {{
+                    background-color: #E6E6E6;
+                    border: 1px solid #C0C0C0;
+                }}
+                QPushButton:disabled {{
+                    background-color: #F5F5F5;
+                    color: #A0A0A0;
+                    border: 1px solid #EEEEEE;
+                }}
+                QComboBox {{
+                    padding: 5px;
+                    border: 1px solid #E0E0E0;
+                    border-radius: 5px;
+                    background-color: {btn_bg};
+                    color: {text_color};
+                }}
+                QComboBox::drop-down {{
+                    border: none;
+                }}
+                QComboBox QAbstractItemView {{
+                     border: 1px solid #E0E0E0;
+                     selection-background-color: #D6D6D6; /* Un poco mas oscuro para resaltar seleccion */
+                     selection-color: {text_color};
+                     background-color: {btn_bg};
+                     color: {text_color}; /* Forzar color de texto oscuro */
+                     outline: none;
+                }}
+                QSlider::groove:horizontal {{
+                    border: 1px solid #E0E0E0;
+                    height: 6px; /* ranura ligeramente más delgada */
+                    background: #F0F0F0;
+                    margin: 2px 0;
+                    border-radius: 3px;
+                }}
+                QSlider::sub-page:horizontal {{
+                    background: #A0A0A0; /* Color de la parte rellena */
+                    border: 1px solid #A0A0A0;
+                    height: 6px;
+                    border-radius: 3px;
+                }}
+                QSlider::handle:horizontal {{
+                    background: {text_color};
+                    border: 1px solid {text_color};
+                    width: 16px;
+                    height: 16px;
+                    margin: -6px 0;
+                    border-radius: 8px;
+                }}
+            """)
         
         # Asignamos ID al boton toggle para que tome el estilo especifico si es necesario
         self.toggle_btn.setObjectName("toggle_btn")
