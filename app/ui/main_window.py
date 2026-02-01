@@ -5,10 +5,8 @@ from app.core.config_manager import ConfigManager
 from app.core.state import AppState
 from app.core.sound_engine import get_engine, SoundEngine
 from app.utils.paths import get_resource_path
+from app.utils.updater import check_for_updates
 import sys
-
-# Esta es la ventana principal que ve el usuario.
-# Debe ser moderna y bonita.
 
 # Clase auxiliar para el enlace del pie de página
 class WebLinkLabel(QLabel):
@@ -131,6 +129,9 @@ class TypheraWindow(QMainWindow):
 
         # Actualizar UI inicial
         self.update_ui_state()
+
+        # Verificar actualizaciones (asíncrono)
+        check_for_updates(self)
 
     def apply_theme(self):
         current_theme = self.config.get("theme", "dark")
