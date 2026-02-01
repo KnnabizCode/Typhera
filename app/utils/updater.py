@@ -9,10 +9,9 @@ from app.core.config_manager import ConfigManager
 from app import __version__
 
 # Repositorio de GitHub para verificar releases (Usuario/Repo)
-# Se asume este repo dado el contexto del usuario.
 GITHUB_REPO = "KnnabizCode/Typhera"
 # Intervalo mínimo entre verificaciones (en horas)
-CHECK_INTERVAL_HOURS = 0.0000000000000001
+CHECK_INTERVAL_HOURS = 24
 
 # Hilo de Verificación
 class UpdateCheckerWorker(QThread):
