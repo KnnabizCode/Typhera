@@ -1,11 +1,6 @@
-# Ignorar compilados de Python
 __pycache__/
 *.pyc
 __init__.py
-
-# Ignorar archivos construidos
 build.py
 build/
-
-# Ignorar entorno virtual
 venv/
