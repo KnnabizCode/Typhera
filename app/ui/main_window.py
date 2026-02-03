@@ -11,7 +11,7 @@ from PySide6.QtGui import QIcon, QAction, QDesktopServices, QMouseEvent, QEnterE
 from app.core.config_manager import ConfigManager
 from app.core.state import AppState
 from app.core.sound_engine import get_engine, SoundEngine
-from app.utils.paths import get_resource_path
+from app.utils.paths import get_resource_path, get_custom_sounds_path
 from app.utils.updater import check_for_updates
 
 # Etiqueta clickeable que actúa como un hipervínculo
@@ -128,6 +128,10 @@ class TypheraWindow(QMainWindow):
         sep_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 15px;")
         content_layout.addWidget(sep_label)
 
+        # Layout para el selector de pack y el botón de agregar
+        sound_pack_layout: QHBoxLayout = QHBoxLayout()
+        sound_pack_layout.setSpacing(10)
+
         # Selector de Pack de Sonido
         self.pack_selector: QComboBox = QComboBox()
         self.pack_selector.addItems(SoundEngine.get_available_packs())
@@ -135,7 +139,19 @@ class TypheraWindow(QMainWindow):
         current_pack: str = str(self.config.get("sound_pack", "Default"))
         self.pack_selector.setCurrentText(current_pack)
         self.pack_selector.currentTextChanged.connect(self.change_sound_pack)
-        content_layout.addWidget(self.pack_selector)
+        
+        # Botón para agregar sonidos
+        self.add_sound_btn: QPushButton = QPushButton("+")
+        self.add_sound_btn.setFixedSize(40, 40) # Mismo tamaño que altura aproximada del combo
+        self.add_sound_btn.setCursor(Qt.PointingHandCursor)
+        self.add_sound_btn.setToolTip("Abrir carpeta de sonidos personalizados")
+        self.add_sound_btn.clicked.connect(self.open_sounds_folder)
+        
+        # Añade widgets al layout horizontal
+        sound_pack_layout.addWidget(self.pack_selector)
+        sound_pack_layout.addWidget(self.add_sound_btn)
+        
+        content_layout.addLayout(sound_pack_layout)
 
         # Slider de Volumen
         vol_layout: QHBoxLayout = QHBoxLayout()
@@ -387,6 +403,11 @@ class TypheraWindow(QMainWindow):
         if self.sound_engine:
             self.sound_engine.load_sound_pack(pack_name)
             self.config.set("sound_pack", pack_name)
+
+    def open_sounds_folder(self) -> None:
+        # Abre el directorio de sonidos personalizados en el explorador de archivos
+        folder_path = get_custom_sounds_path()
+        QDesktopServices.openUrl(QUrl.fromLocalFile(folder_path))
 
     def manual_update_check(self) -> None:
         # Inicia una búsqueda forzada de actualizaciones

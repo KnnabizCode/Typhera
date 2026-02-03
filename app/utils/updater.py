@@ -10,7 +10,6 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLa
 from app.core.config_manager import ConfigManager
 from app import __version__
 
-# Define el repositorio de GitHub y el intervalo de verificación
 GITHUB_REPO: str = "KnnabizCode/Typhera"
 CHECK_INTERVAL_HOURS: int = 24
 

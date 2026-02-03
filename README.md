@@ -16,7 +16,7 @@ Typhera es una aplicación de escritorio moderna y minimalista que reproduce son
 ## 📥 Descarga e Instalación
 
 1.  **Descargar**: Obtén la última versión desde el siguiente enlace:
-    *   🔗 **[Descargar Typhera (Última Versión)](https://github.com/KnnabizCode/Typhera/releases)**
+    *   🔗 **[Descargar Typhera (Última Versión)](https://github.com/KnnabizCode/Typhera/releases/latest)**
 2.  **Descomprimir**: Extrae el contenido del archivo ZIP en una carpeta.
 3.  **Ejecutar**: Haz doble clic en `Typhera.exe` (no requiere instalación).
 4.  **¡Listo!**: Typhera se iniciará y podrás acceder a ella desde el icono en la bandeja del sistema.

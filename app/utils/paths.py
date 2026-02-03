@@ -63,19 +63,24 @@ def get_config_path() -> str:
     return str(config_dir)
 
 def get_user_sounds_path() -> str:
-    # Obtiene el directorio de documentos para sonidos de usuario
-    docs_path: Path = Path(os.path.expanduser("~")) / "Documents" / "Typhera"
+    # Obtiene el directorio de AppData para sonidos de usuario
+    # En Windows, utiliza %APPDATA%
+    app_data: Union[str, None] = os.getenv('APPDATA')
+    if not app_data:
+        # Fallback genérico al directorio home
+        app_data = os.path.expanduser("~")
+
+    sounds_path: Path = Path(app_data) / "Typhera" / "sounds"
     
-    if not docs_path.exists():
+    if not sounds_path.exists():
         try:
-            os.makedirs(docs_path)
-            # Prepara la subcarpeta para sonidos personalizados
-            os.makedirs(docs_path / "Custom", exist_ok=True)
+            os.makedirs(sounds_path, exist_ok=True)
         except OSError:
             pass
             
-    return str(docs_path)
+    return str(sounds_path)
 
 def get_custom_sounds_path() -> str:
     # Retorna la ruta específica para packs de sonido personalizados
-    return str(Path(get_user_sounds_path()) / "Custom")
+    # Ahora apunta al mismo directorio base de sonidos
+    return get_user_sounds_path()
