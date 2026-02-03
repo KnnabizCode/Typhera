@@ -26,11 +26,11 @@ Typhera es una aplicación de escritorio moderna y minimalista que reproduce son
 Typhera hace que personalizar tu experiencia sea muy fácil:
 
 1.  Abre la aplicación.
-2.  Ve a tu carpeta de **Documentos** -> **Typhera** -> **Custom**.
-    *   *Ruta típica: `C:\Users\TuUsuario\Documents\Typhera\Custom`*
+2.  Haz clic en el botón **"+"** en la aplicación para abrir la carpeta de sonidos.
+    *   *Ruta alternativa: `C:\Users\TuUsuario\AppData\Roaming\Typhera\sounds`*
 3.  Coloca tus archivos de sonido **.wav** en esa carpeta.
     *   Ejemplo: `burbujas.wav`, `mario_coin.wav`, `explosion.wav`.
-4.  Reinicia Typhera (o simplemente abre el selector de sonidos).
+4.  Reinicia Typhera.
 5.  ¡Listo! Tus sonidos aparecerán en la lista con su nombre (ej: "Burbujas").
 
 > **Nota**: Se recomienda usar archivos `.wav` cortos para mejor rendimiento.
