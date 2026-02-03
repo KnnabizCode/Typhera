@@ -49,7 +49,7 @@ class TypheraWindow(QMainWindow):
         # Obtenemos la instancia del motor de sonido
         self.sound_engine: Optional[SoundEngine] = get_engine() 
         
-        self.setWindowTitle("Typhera")
+        self.setWindowTitle("Typhera - v1.1.0")
         # Aumentamos altura para nuevos controles
         self.setFixedSize(400, 450) 
         
