@@ -2,7 +2,7 @@
 
 Typhera es una aplicación de escritorio moderna y minimalista que reproduce sonidos personalizables al escribir en tu teclado. Ideal para darle una sensación táctil y auditiva a tu experiencia de escritura.
 
-![Typhera UI](https://i.imgur.com/IFWCLls.png)
+![Typhera UI](https://i.imgur.com/etoauvl.png)
 
 ## ✨ Características
 
