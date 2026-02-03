@@ -1,20 +1,21 @@
-# Guarda el estado global de la aplicacion
-# Puede ser accedido desde cualquier parte para saber si la app esta activa o en pausa.
-
+# Gestiona el estado global de la aplicación
+# Permite un acceso centralizado para verificar si la aplicación está activa o en pausa
 class AppState:
-    # Variable estatica compartida
-    _is_active = True
+    # Mantiene el estado activo compartir entre componentes
+    _is_active: bool = True
     
     @classmethod
-    def is_active(cls):
+    def is_active(cls) -> bool:
+        # Retorna el estado actual
         return cls._is_active
     
     @classmethod
-    def set_active(cls, active: bool):
+    def set_active(cls, active: bool) -> None:
+        # Actualiza el estado global de la aplicación
         cls._is_active = active
-        # Aqui podriamos avisar a otras partes si cambiamos el estado
         print(f"Estado cambiado a: {'Activo' if active else 'Pausa'}")
 
     @classmethod
-    def toggle(cls):
+    def toggle(cls) -> None:
+        # Alterna entre activo y pausa
         cls.set_active(not cls.is_active())

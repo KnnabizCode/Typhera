@@ -1,57 +1,60 @@
-from PySide6.QtWidgets import QSystemTrayIcon, QMenu
-from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QMainWindow
+from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QCoreApplication
 from app.utils.paths import get_resource_path
 from app.core.state import AppState
 
-# Icono en la bandeja del sistema.
-# Permite controlar la app sin abrir la ventana.
-
+# Controla el icono en la bandeja del sistema y su menú contextual
+# Permite interacción básica con la aplicación minimizada
 class TypheraTray(QSystemTrayIcon):
-    def __init__(self, main_window):
-        # Necesitamos una referencia a la ventana principal para mostrarla/ocultarla
-        icon_path = get_resource_path("icons/icon.ico")
-        # Si no hay icono, PySide usara uno por defecto o nada
+    def __init__(self, main_window: QMainWindow) -> None:
+        # Inicializa el icono con la referencia a la ventana principal
+        icon_path: str = get_resource_path("icons/icon.ico")
         super().__init__(QIcon(icon_path), main_window)
-        self.window = main_window
         
+        self.window: QMainWindow = main_window
         self.setToolTip("Typhera")
         
-        # Crear menu
-        self.menu = QMenu()
+        # Construye el menú contextual
+        self.menu: QMenu = QMenu()
         
-        # Accion: Abrir
-        self.action_show = self.menu.addAction("Abrir Configuración")
+        # Opción para restaurar la ventana
+        self.action_show: QAction = self.menu.addAction("Abrir Configuración")
         self.action_show.triggered.connect(self.show_window)
         
-        # Accion: Pausar/Reanudar
-        self.action_toggle = self.menu.addAction("Pausar")
+        # Opción para pausar/reanudar el listener
+        self.action_toggle: QAction = self.menu.addAction("Pausar")
         self.action_toggle.triggered.connect(self.toggle_state)
         
-        # Separador
         self.menu.addSeparator()
         
-        # Accion: Salir
-        self.action_quit = self.menu.addAction("Salir")
+        # Opción para cerrar la aplicación completamente
+        self.action_quit: QAction = self.menu.addAction("Salir")
         self.action_quit.triggered.connect(self.quit_app)
         
         self.setContextMenu(self.menu)
         
-        # Al hacer doble clic en el icono, abrimos la ventana
+        # Maneja la activación por doble clic
         self.activated.connect(self.on_activated)
         
         self.show()
 
-    def show_window(self):
+    def show_window(self) -> None:
+        # Restaura y enfoca la ventana principal
         self.window.show()
-        self.window.activateWindow() # Traer al frente
+        self.window.activateWindow()
 
-    def toggle_state(self):
+    def toggle_state(self) -> None:
+        # Alterna el estado global de pausa
         AppState.toggle()
         self.update_menu_text()
-        self.window.update_ui_state() # Sincronizar ventana si esta abierta
+        
+        # Sincroniza la interfaz de la ventana principal si está visible
+        if hasattr(self.window, 'update_ui_state'):
+            self.window.update_ui_state()
 
-    def update_menu_text(self):
+    def update_menu_text(self) -> None:
+        # Actualiza el texto del menú según el estado actual
         if AppState.is_active():
             self.action_toggle.setText("Pausar")
             self.setToolTip("Typhera: Activo")
@@ -59,9 +62,11 @@ class TypheraTray(QSystemTrayIcon):
             self.action_toggle.setText("Reanudar")
             self.setToolTip("Typhera: Pausa")
 
-    def on_activated(self, reason):
+    def on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        # Abre la ventana al hacer doble clic en el icono
         if reason == QSystemTrayIcon.DoubleClick:
             self.show_window()
 
-    def quit_app(self):
+    def quit_app(self) -> None:
+        # Finaliza el proceso de la aplicación
         QCoreApplication.quit()

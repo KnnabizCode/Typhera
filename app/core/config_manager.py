@@ -1,34 +1,36 @@
 import json
 import os
+from typing import Any, Dict, Optional
 from app.utils.paths import get_config_path
 
-# Se encarga de guardar y leer las opciones del usuario.
-
+# Gestiona la persistencia de la configuración del usuario
 class ConfigManager:
-    _instance = None
-    _config = {}
-    _file_path = ""
+    _instance: Optional['ConfigManager'] = None
+    _config: Dict[str, Any] = {}
+    _file_path: str = ""
     
-    # Valores por defecto si no existe el archivo
-    DEFAULT_SETTINGS = {
+    # Define la configuración base por defecto
+    DEFAULT_SETTINGS: Dict[str, Any] = {
         "volume": 50,
-        "theme": "dark", # 'dark' o 'light'
+        "theme": "dark",
         "sound_pack": "default"
     }
 
-    def __new__(cls):
-        # Aseguramos que solo haya un ConfigManager en toda la app
+    def __new__(cls) -> 'ConfigManager':
+        # Implementa el patrón Singleton para mantener una única instancia
         if cls._instance is None:
             cls._instance = super(ConfigManager, cls).__new__(cls)
             cls._instance._initialize()
         return cls._instance
 
-    def _initialize(self):
-        config_dir = get_config_path()
+    def _initialize(self) -> None:
+        # Establece la ruta del archivo y carga la configuración inicial
+        config_dir: str = get_config_path()
         self._file_path = os.path.join(config_dir, "settings.json")
         self.load_config()
 
-    def load_config(self):
+    def load_config(self) -> None:
+        # Carga la configuración desde el disco o crea una por defecto si falla
         if os.path.exists(self._file_path):
             try:
                 with open(self._file_path, 'r', encoding='utf-8') as f:
@@ -40,16 +42,19 @@ class ConfigManager:
             self._config = self.DEFAULT_SETTINGS.copy()
             self.save_config()
 
-    def save_config(self):
+    def save_config(self) -> None:
+        # Persiste la configuración actual en el archivo JSON
         try:
             with open(self._file_path, 'w', encoding='utf-8') as f:
                 json.dump(self._config, f, indent=4)
         except Exception as e:
             print(f"Error guardando config: {e}")
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
+        # Recupera un valor de configuración
         return self._config.get(key, default)
 
-    def set(self, key, value):
+    def set(self, key: str, value: Any) -> None:
+        # Actualiza un valor y persiste los cambios
         self._config[key] = value
         self.save_config()

@@ -2,44 +2,41 @@ import sys
 import os
 from PySide6.QtWidgets import QApplication
 
-# Aseguramos que Python encuentre nuestros modulos
-# Agregamos la carpeta actual al path de busqueda
+# Configura la ruta de búsqueda para módulos locales
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.core.config_manager import ConfigManager
 from app.core.keyboard_listener import KeyboardMonitor
-from app.core.state import AppState
 from app.core.sound_engine import initialize_sound_engine
 from app.ui.main_window import TypheraWindow
 from app.ui.tray import TypheraTray
 
-# Función principal
-def main():
-    # Crear la aplicacion Qt
-    app = QApplication(sys.argv)
+# Orquesta la inicialización de servicios y el ciclo de vida de la UI
+def main() -> None:
+    # Inicializa el contexto de la aplicación Qt
+    app: QApplication = QApplication(sys.argv)
     
-    # Esto es importante para que la app no se cierre si cerramos la ventana
-    # porque queremos que siga en la bandeja del sistema
+    # Mantiene la ejecución activa en segundo plano al cerrar ventanas
     app.setQuitOnLastWindowClosed(False)
 
-    # Cargar configuracion
-    config = ConfigManager()
+    # Carga la configuración del sistema
+    _config: ConfigManager = ConfigManager()
     
-    # Iniciar motor de sonido
+    # Prepara el motor de audio
     initialize_sound_engine()
     
-    # Iniciar monitor de teclado (en segundo plano)
-    kb_monitor = KeyboardMonitor()
+    # Inicia el monitoreo de eventos de teclado en hilo separado
+    kb_monitor: KeyboardMonitor = KeyboardMonitor()
     kb_monitor.start()
 
-    # Iniciar UI
-    window = TypheraWindow()
-    tray = TypheraTray(window)
+    # Instancia y conecta los componentes visuales
+    window: TypheraWindow = TypheraWindow()
+    _tray: TypheraTray = TypheraTray(window)
 
-    # Iniciar bucle de eventos
-    exit_code = app.exec()
+    # Ejecuta el bucle de eventos principal
+    exit_code: int = app.exec()
 
-    # Limpieza al salir
+    # Finaliza hilos y libera recursos
     kb_monitor.stop()
     sys.exit(exit_code)
 

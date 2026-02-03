@@ -1,59 +1,86 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, QSlider, QComboBox
-from PySide6.QtCore import Qt, QSize, QUrl
-from PySide6.QtGui import QIcon, QAction, QDesktopServices
+import sys
+from typing import Optional
+
+from PySide6.QtWidgets import (
+    QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, 
+    QFrame, QSlider, QComboBox
+)
+from PySide6.QtCore import Qt, QSize, QUrl, QEvent
+from PySide6.QtGui import QIcon, QAction, QDesktopServices, QMouseEvent, QEnterEvent
+
 from app.core.config_manager import ConfigManager
 from app.core.state import AppState
 from app.core.sound_engine import get_engine, SoundEngine
 from app.utils.paths import get_resource_path
 from app.utils.updater import check_for_updates
-import sys
 
-# Clase auxiliar para el enlace del pie de página
+# Etiqueta clickeable que actúa como un hipervínculo
 class WebLinkLabel(QLabel):
-    def __init__(self, text, url, parent=None):
+    def __init__(self, text: str, url: str, parent: Optional[QWidget] = None) -> None:
         super().__init__(text, parent)
-        self.url = url
+        self.url: str = url
         self.setCursor(Qt.PointingHandCursor)
         self.setAlignment(Qt.AlignCenter)
         
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        # Abre la URL en el navegador predeterminado
         QDesktopServices.openUrl(QUrl(self.url))
         
-    def enterEvent(self, event):
+    def enterEvent(self, event: QEnterEvent) -> None:
+        # Resalta el texto al pasar el mouse por encima
         font = self.font()
         font.setBold(True)
         self.setFont(font)
         super().enterEvent(event)
         
-    def leaveEvent(self, event):
+    def leaveEvent(self, event: QEvent) -> None:
+        # Restaura el estilo original al salir el mouse
         font = self.font()
         font.setBold(False)
         self.setFont(font)
         super().leaveEvent(event)
 
+# Ventana principal de la aplicación Typhera
+# Gestiona la interfaz de usuario, la configuración visual y la interacción con el usuario
 class TypheraWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.config = ConfigManager()
-        self.sound_engine = get_engine() # Obtenemos la instancia del motor
-        self.setWindowTitle("Typhera")
-        self.setFixedSize(400, 450) # Aumentamos altura para nuevos controles
+        self.config: ConfigManager = ConfigManager()
+        # Obtenemos la instancia del motor de sonido
+        self.sound_engine: Optional[SoundEngine] = get_engine() 
         
-        # Configuramos el icono de la ventana
+        self.setWindowTitle("Typhera")
+        # Aumentamos altura para nuevos controles
+        self.setFixedSize(400, 450) 
+        
+        # Carga el icono de la ventana si existe
         # Asumimos que existe un icon.ico en resources, en caso contrario, no mostrara el icono
         self.setWindowIcon(QIcon(get_resource_path("icons/icon.ico")))
 
-        # Widget central
-        central_widget = QWidget()
+        # Configura el contenedor principal
+        central_widget: QWidget = QWidget()
         self.setCentralWidget(central_widget)
-        self.main_layout = QVBoxLayout(central_widget)
-        self.main_layout.setContentsMargins(30, 30, 30, 30) # Mas margen
+        self.main_layout: QVBoxLayout = QVBoxLayout(central_widget)
+        # Mas margen
+        self.main_layout.setContentsMargins(30, 30, 30, 30) 
         self.main_layout.setSpacing(15)
 
-        top_bar_layout = QHBoxLayout()
-        top_bar_layout.addStretch() # Empujar a la derecha
+        # Construye la barra superior (Top Bar)
+        top_bar_layout: QHBoxLayout = QHBoxLayout()
+        
+        # Inicializa botón de actualizaciones
+        self.update_btn: QPushButton = QPushButton("🔄")
+        self.update_btn.setFixedSize(40, 40)
+        self.update_btn.setCursor(Qt.PointingHandCursor)
+        self.update_btn.setToolTip("Buscar Actualizaciones")
+        self.update_btn.clicked.connect(self.manual_update_check)
+        top_bar_layout.addWidget(self.update_btn)
 
-        self.theme_btn = QPushButton("☀️") # Icono o texto corto
+        # Empujar a la derecha
+        top_bar_layout.addStretch() 
+
+        # Inicializa botón de tema
+        self.theme_btn: QPushButton = QPushButton("☀️") # Icono o texto corto
         self.theme_btn.setFixedSize(40, 40)
         self.theme_btn.setCursor(Qt.PointingHandCursor)
         self.theme_btn.clicked.connect(self.toggle_theme)
@@ -63,54 +90,59 @@ class TypheraWindow(QMainWindow):
         
         self.main_layout.addLayout(top_bar_layout)
 
+        # Construye el área de contenido
         # Usamos un layout vertical interno para el contenido y lo centramos
-        content_layout = QVBoxLayout()
+        content_layout: QVBoxLayout = QVBoxLayout()
         content_layout.setSpacing(20)
 
-        self.main_layout.addStretch() # Espacio arriba
+        # Espacio arriba
+        self.main_layout.addStretch() 
         self.main_layout.addLayout(content_layout)
-        self.main_layout.addStretch() # Espacio abajo
+        # Espacio abajo
+        self.main_layout.addStretch() 
 
-        # Titulo
-        self.title_label = QLabel("Typhera")
+        # Título principal
+        self.title_label: QLabel = QLabel("Typhera")
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setStyleSheet("font-size: 32px; font-weight: bold;")
         content_layout.addWidget(self.title_label)
 
-        # Estado (Activo / Pausa)
-        self.status_label = QLabel("Estado: Activo")
+        # Etiqueta de estado (Activo / Pausa)
+        self.status_label: QLabel = QLabel("Estado: Activo")
         self.status_label.setAlignment(Qt.AlignCenter)
         self.status_label.setStyleSheet("font-size: 16px; margin-bottom: 5px;")
         content_layout.addWidget(self.status_label)
 
-        # Boton Toggle (Activar / Desactivar)
-        self.toggle_btn = QPushButton("Pausar")
+        # Botón de alternancia de estado (Activar / Desactivar)
+        self.toggle_btn: QPushButton = QPushButton("Pausar")
         self.toggle_btn.setCursor(Qt.PointingHandCursor)
         self.toggle_btn.clicked.connect(self.toggle_active_state)
         self.toggle_btn.setMinimumHeight(45)
+        # Asigna ID para estilos específicos
+        self.toggle_btn.setObjectName("toggle_btn")
         content_layout.addWidget(self.toggle_btn)
 
-        # Controles de Audio
-        sep_label = QLabel("Configuración de Audio")
+        # Separador visual para configuración de audio
+        sep_label: QLabel = QLabel("Configuración de Audio")
         sep_label.setAlignment(Qt.AlignCenter)
         sep_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 15px;")
         content_layout.addWidget(sep_label)
 
-        # Selector de Pack
-        self.pack_selector = QComboBox()
+        # Selector de Pack de Sonido
+        self.pack_selector: QComboBox = QComboBox()
         self.pack_selector.addItems(SoundEngine.get_available_packs())
-        # Seleccionar el actual
-        current_pack = self.config.get("sound_pack", "Default")
+        # Seleccionar el pack actual guardado en la configuración
+        current_pack: str = str(self.config.get("sound_pack", "Default"))
         self.pack_selector.setCurrentText(current_pack)
         self.pack_selector.currentTextChanged.connect(self.change_sound_pack)
         content_layout.addWidget(self.pack_selector)
 
         # Slider de Volumen
-        vol_layout = QHBoxLayout()
-        vol_label = QLabel("Volumen:")
-        self.vol_slider = QSlider(Qt.Horizontal)
+        vol_layout: QHBoxLayout = QHBoxLayout()
+        vol_label: QLabel = QLabel("Volumen:")
+        self.vol_slider: QSlider = QSlider(Qt.Horizontal)
         self.vol_slider.setRange(0, 100)
-        self.vol_slider.setValue(self.config.get("volume", 50))
+        self.vol_slider.setValue(int(self.config.get("volume", 50)))
         self.vol_slider.valueChanged.connect(self.change_volume)
         
         vol_layout.addWidget(vol_label)
@@ -120,21 +152,16 @@ class TypheraWindow(QMainWindow):
         content_layout.addStretch()
         
         # Enlace del pie de página
-        self.footer_link = WebLinkLabel("Web: knnabiz.vip", "https://knnabiz.vip")
+        self.footer_link: WebLinkLabel = WebLinkLabel("Web: knnabiz.vip", "https://knnabiz.vip")
         content_layout.addWidget(self.footer_link)
 
-
-        # Aplicamos el tema guardado
+        # Aplica el tema inicial y actualiza la UI
         self.apply_theme()
-
-        # Actualizar UI inicial
         self.update_ui_state()
 
-        # Verificar actualizaciones (asíncrono)
-        check_for_updates(self)
-
-    def apply_theme(self):
-        current_theme = self.config.get("theme", "dark")
+    def apply_theme(self) -> None:
+        # Aplica los colores y estilos CSS basados en el tema seleccionado
+        current_theme: str = str(self.config.get("theme", "dark"))
         
         if current_theme == "dark":
             # Colores oscuros (#1e1e2e)
@@ -180,13 +207,15 @@ class TypheraWindow(QMainWindow):
                 }}
             """
 
+        # Actualiza el texto del botón de tema y aplica estilos a los botones de la barra superior
         self.theme_btn.setText("🌙" if current_theme == "light" else "☀️")
         self.theme_btn.setStyleSheet(theme_btn_style)
+        self.update_btn.setStyleSheet(theme_btn_style)
 
-        # Actualizar color del enlace del pie de página
+        # Actualiza el estilo del footer
         self.footer_link.setStyleSheet(f"color: {text_color}; margin-top: 10px; font-size: 12px;")
 
-        # Aplicamos la hoja de estilo general con reglas mejoradas
+        # Aplica la hoja de estilo global
         if current_theme == "dark":
             # Estilo Dark Mode (Mejorado)
             self.setStyleSheet(f"""
@@ -323,17 +352,16 @@ class TypheraWindow(QMainWindow):
                 }}
             """)
         
-        # Asignamos ID al boton toggle para que tome el estilo especifico si es necesario
-        self.toggle_btn.setObjectName("toggle_btn")
-
-    def toggle_theme(self):
-        current = self.config.get("theme", "dark")
-        new_theme = "light" if current == "dark" else "dark"
+    def toggle_theme(self) -> None:
+        # Alterna entre temas claro y oscuro y persiste la elección
+        current: str = str(self.config.get("theme", "dark"))
+        new_theme: str = "light" if current == "dark" else "dark"
         self.config.set("theme", new_theme)
         self.apply_theme()
 
-    def update_ui_state(self):
-        is_active = AppState.is_active()
+    def update_ui_state(self) -> None:
+        # Actualiza visualmente los indicadores de estado de la aplicación
+        is_active: bool = AppState.is_active()
         if is_active:
             self.status_label.setText("Estado: Activo 🔊")
             self.toggle_btn.setText("Pausar")
@@ -344,19 +372,27 @@ class TypheraWindow(QMainWindow):
             self.toggle_btn.setText("Reanudar")
             self.status_label.setStyleSheet("color: #f38ba8; font-weight: bold;") # Rojo pastel
 
-    def toggle_active_state(self):
+    def toggle_active_state(self) -> None:
+        # Maneja el evento de click en el botón de pausa/reanudar
         AppState.toggle()
         self.update_ui_state()
 
-    def change_volume(self, value):
+    def change_volume(self, value: int) -> None:
+        # Ajusta el volumen del motor de sonido
         if self.sound_engine:
             self.sound_engine.set_volume(value)
 
-    def change_sound_pack(self, pack_name):
+    def change_sound_pack(self, pack_name: str) -> None:
+        # Carga un nuevo pack de sonidos según la selección del usuario
         if self.sound_engine:
             self.sound_engine.load_sound_pack(pack_name)
             self.config.set("sound_pack", pack_name)
 
-    def closeEvent(self, event):
+    def manual_update_check(self) -> None:
+        # Inicia una búsqueda forzada de actualizaciones
+        check_for_updates(self, force=True)
+
+    def closeEvent(self, event: QEvent) -> None:
+        # Minimiza a la bandeja en lugar de cerrar la aplicación
         event.ignore()
         self.hide()
